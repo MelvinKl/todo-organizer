@@ -1,15 +1,15 @@
 import logging
 
 from todo_organizer.db.db_handler import DBHandler
-from todo_organizer.logic.update_algorithms import UpdateAlgorithms
+from todo_organizer.logic.priority_updater import PriorityUpdater
 
 logger = logging.getLogger(__name__)
 
 
 class Logic:
-    def __init__(self, db_handler: DBHandler):
+    def __init__(self, db_handler: DBHandler, priority_updater: PriorityUpdater):
         self._db_handler = db_handler
-        self._priority_updater = UpdateAlgorithms()
+        self._priority_updater = priority_updater
 
     def get_all_lists(self):
         return self._db_handler.get_all_lists()

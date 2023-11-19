@@ -3,4 +3,4 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    db_connection_string: str = Field('postgres://user:pass@localhost:5432/foobar')
+    db_connection_string: str = Field("postgres://user:pass@localhost:5432/foobar")

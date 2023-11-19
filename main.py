@@ -8,13 +8,15 @@ from todo_organizer.db.db_handler import DBHandler
 from todo_organizer.db.schema.todo_item import TodoItem
 from todo_organizer.db.schema.todo_list import TodoList
 from todo_organizer.logic.logic import Logic
-from todo_organizer.logic.priority_update_algorithms import PriorityUpdateAlgorithms
+from todo_organizer.logic.priority_updater import PriorityUpdater
+from todo_organizer.logic.update_algorithms import UpdateAlgorithms
 from todo_organizer.settings.settings import Settings
 
 logger = logging.getLogger(__name__)
 settings = Settings()
 db_handler = DBHandler(connection_string=settings.db_connection_string)
-l = Logic(db_handler=db_handler)
+priority_updater = PriorityUpdater()
+logic = Logic(db_handler=db_handler, priority_updater=priority_updater)
 
 selected_list = None
 task_items = []
@@ -26,17 +28,17 @@ def _save_changes(key):
     relevant_item = [x for x in task_items if x.id == key][0]
     relevant_item.priority = priority
     relevant_item.description = description
-    l.upsert_list(selected_list, task_items)
+    logic.upsert_list(selected_list, task_items)
 
 
 def _delete_list_item(key):
     relevant_item = [x for x in task_items if x.id == key][0]
-    l.delete_item(relevant_item)
+    logic.delete_item(relevant_item)
 
 
 def _finish_list_item(key):
     relevant_item = [x for x in task_items if x.id == key][0]
-    l.finish_item(selected_list, relevant_item)
+    logic.finish_item(selected_list, relevant_item)
 
 
 def _add_new_list_item(priority, title, description, priority_update_increment_weight, priority_update_algorithm):
@@ -48,16 +50,16 @@ def _add_new_list_item(priority, title, description, priority_update_increment_w
         priority_update_algorithm=priority_update_algorithm.value,
         priority_update_increment_weight=priority_update_increment_weight,
     )
-    l.upsert_list(selected_list, task_items + [new_item])
+    logic.upsert_list(selected_list, task_items + [new_item])
 
 
 def _add_new_list(name, max_priority):
     new_list = TodoList(id=str(uuid.uuid4()), name=name, priority_max=max_priority)
-    l.upsert_list(new_list, [])
+    logic.upsert_list(new_list, [])
 
 
 with st.sidebar:
-    selected_list = st.selectbox("TODO Lists", l.get_all_lists())
+    selected_list = st.selectbox("TODO Lists", logic.get_all_lists())
 
     with st.expander("New List", expanded=False):
         with st.form(key="new_list_form"):
@@ -76,8 +78,8 @@ with st.sidebar:
             priority = st.number_input(
                 label="Priority", min_value=0.0, max_value=selected_list.priority_max, step=0.1, value=0.0
             )
-            priority_update_algorithm = st.selectbox("Priority update Algorithm", PriorityUpdateAlgorithms)
-            if priority_update_algorithm == PriorityUpdateAlgorithms.Increment:
+            priority_update_algorithm = st.selectbox("Priority update Algorithm", UpdateAlgorithms)
+            if priority_update_algorithm == UpdateAlgorithms.Increment:
                 priority_update_increment_weight = st.number_input(
                     label="Priority increment value", min_value=0.0, max_value=5.0, step=0.01
                 )
@@ -93,10 +95,10 @@ with st.sidebar:
 
         st.markdown("""---""")
         if st.button(key="delete_list", label="Delete list"):
-            l.delete_item(selected_list)
+            logic.delete_item(selected_list)
 
 if selected_list:
-    task_items = l.get_list_items(selected_list)
+    task_items = logic.get_list_items(selected_list)
     st.title(selected_list.name)
 
 # for task in db.items:
