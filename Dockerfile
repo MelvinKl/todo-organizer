@@ -9,4 +9,4 @@ RUN pip install -r requirements.txt
 
 RUN apt remove build-essential -y && apt auto-remove -y
 
-ENTRYPOINT ["streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0"]
+ENTRYPOINT ["streamlit", "run", "main.py", "--server.port=8080", "--server.address=0.0.0.0"]
