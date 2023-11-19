@@ -5,7 +5,6 @@ from logic.priority_update_algorithms import PriorityUpdateAlgorithms
 
 
 class UpdateAlgorithms:
-
     def update_priority(self, list_items: List[TodoItem], max_priority: float) -> List[TodoItem]:
         for item in list_items:
             if item.priority_update_algorithm == PriorityUpdateAlgorithms.Increment.value:

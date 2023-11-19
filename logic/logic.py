@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 class Logic:
-
     def __init__(self):
         self._db_handler = DBHandler()
         self._priority_updater = UpdateAlgorithms()

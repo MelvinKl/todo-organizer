@@ -8,7 +8,7 @@ class TodoList(Base):
 
     id = Column(String, primary_key=True, nullable=False)
     name = Column(String)
-    priority_max = Column(Float, default=10.)
+    priority_max = Column(Float, default=10.0)
 
     def __repr__(self):
         return self.name

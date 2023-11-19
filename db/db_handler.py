@@ -14,8 +14,7 @@ class DBHandler:
 
     def get_list_items(self, todo_list: TodoList):
         with Session(self._engine) as session:
-            result = session.query(TodoItem).filter_by(list_id=todo_list.id).order_by(
-                -TodoItem.priority).all()
+            result = session.query(TodoItem).filter_by(list_id=todo_list.id).order_by(-TodoItem.priority).all()
             return result
 
     def get_all_lists(self):

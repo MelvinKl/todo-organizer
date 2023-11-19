@@ -38,9 +38,14 @@ def _finish_list_item(key):
 
 
 def _add_new_list_item(priority, title, description, priority_update_increment_weight, priority_update_algorithm):
-    new_item = TodoItem(list_id=selected_list.id, priority=priority, title=title, description=description,
-                        priority_update_algorithm=priority_update_algorithm.value,
-                        priority_update_increment_weight=priority_update_increment_weight)
+    new_item = TodoItem(
+        list_id=selected_list.id,
+        priority=priority,
+        title=title,
+        description=description,
+        priority_update_algorithm=priority_update_algorithm.value,
+        priority_update_increment_weight=priority_update_increment_weight,
+    )
     l.upsert_list(selected_list, task_items + [new_item])
 
 
@@ -50,14 +55,14 @@ def _add_new_list(name, max_priority):
 
 
 with st.sidebar:
-    selected_list = st.selectbox('TODO Lists', l.get_all_lists())
+    selected_list = st.selectbox("TODO Lists", l.get_all_lists())
 
     with st.expander("New List", expanded=False):
         with st.form(key="new_list_form"):
             name = st.text_input(label="Name")
-            max_priority = st.number_input(label="Priority", min_value=0.,
-                                           max_value=sys.float_info.max,
-                                           step=1., value=5.)
+            max_priority = st.number_input(
+                label="Priority", min_value=0.0, max_value=sys.float_info.max, step=1.0, value=5.0
+            )
             submitted = st.form_submit_button("Add")
             if submitted:
                 _add_new_list(name, max_priority)
@@ -66,21 +71,23 @@ with st.sidebar:
     if selected_list:
         st.markdown("""---""")
         with st.expander("New Item", expanded=False):
-            priority = st.number_input(label="Priority", min_value=0.,
-                                       max_value=selected_list.priority_max,
-                                       step=0.1, value=0.)
+            priority = st.number_input(
+                label="Priority", min_value=0.0, max_value=selected_list.priority_max, step=0.1, value=0.0
+            )
             priority_update_algorithm = st.selectbox("Priority update Algorithm", PriorityUpdateAlgorithms)
             if priority_update_algorithm == PriorityUpdateAlgorithms.Increment:
-                priority_update_increment_weight = st.number_input(label="Priority increment value", min_value=0.,
-                                                                   max_value=5., step=.01)
+                priority_update_increment_weight = st.number_input(
+                    label="Priority increment value", min_value=0.0, max_value=5.0, step=0.01
+                )
             else:
                 priority_update_increment_weight = 0
             title = st.text_input(label="Title")
             description = st.text_area(label="Description")
             submitted = st.button(label="Add")
             if submitted:
-                _add_new_list_item(priority, title, description, priority_update_increment_weight,
-                                   priority_update_algorithm)
+                _add_new_list_item(
+                    priority, title, description, priority_update_increment_weight, priority_update_algorithm
+                )
 
         st.markdown("""---""")
         if st.button(key="delete_list", label="Delete list"):
@@ -96,14 +103,23 @@ for task in task_items:
     st.session_state[f"{task.id}_priority"] = task.priority
     st.session_state[f"{task.id}_description"] = task.description
     with st.expander(task.title, expanded=False):
-        new_priority = st.number_input(label="Priority", min_value=0.,
-                                       max_value=selected_list.priority_max,
-                                       step=0.1,
-                                       value=st.session_state[f"{task.id}_priority"], key=f"{task.id}priority",
-                                       on_change=_save_changes, args=(task.id,)
-                                       )
-        new_description = st.text_area(label="Description", value=st.session_state[f"{task.id}_description"],
-                                       key=f"{task.id}description", on_change=_save_changes, args=(task.id,))
+        new_priority = st.number_input(
+            label="Priority",
+            min_value=0.0,
+            max_value=selected_list.priority_max,
+            step=0.1,
+            value=st.session_state[f"{task.id}_priority"],
+            key=f"{task.id}priority",
+            on_change=_save_changes,
+            args=(task.id,),
+        )
+        new_description = st.text_area(
+            label="Description",
+            value=st.session_state[f"{task.id}_description"],
+            key=f"{task.id}description",
+            on_change=_save_changes,
+            args=(task.id,),
+        )
         col1, col2 = st.columns(2)
         with col1:
             st.button(label="Delete", key=f"{task.id}delete", on_click=_delete_list_item, args=(task.id,))
