@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Float
 
-from db.schema import Base
+from todo_organizer.db.schema import Base
 
 
 class TodoList(Base):

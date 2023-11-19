@@ -1,16 +1,17 @@
+import logging
+
 from sqlalchemy import create_engine
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from db.schema import Base
-from db.schema.todo_item import TodoItem
-from db.schema.todo_list import TodoList
+from todo_organizer.db.schema.todo_item import TodoItem
+from todo_organizer.db.schema.todo_list import TodoList
+
+logger = logging.getLogger(__name__)
 
 
 class DBHandler:
-    def __init__(self):
-        self._engine = create_engine("sqlite+pysqlite:///test", echo=True)
-        Base.metadata.create_all(self._engine)
+    def __init__(self, connection_string: str):
+        self._engine = create_engine(connection_string, echo=False)
 
     def get_list_items(self, todo_list: TodoList):
         with Session(self._engine) as session:
@@ -23,15 +24,14 @@ class DBHandler:
             return result
 
     def upsert(self, db_items):
-        with Session(self._engine) as session:
-            for i in range(len(db_items)):
-                try:
-                    db_items[i] = session.merge(db_items[i])
-                except IntegrityError:
-                    pass
-                    # session.add(item)
-            session.add_all(db_items)
-            session.commit()
+        try:
+            with Session(self._engine) as session:
+                data = [session.merge(x) for x in db_items]  # upsert
+                session.add_all(data)
+                session.commit()
+        except Exception as e:
+            logger.error(f"Could not upsert data. {e}")
+            raise e
 
     def delete(self, db_item):
         with Session(self._engine) as session:

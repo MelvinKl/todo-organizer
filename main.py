@@ -4,13 +4,17 @@ import uuid
 
 import streamlit as st
 
-from db.schema.todo_item import TodoItem
-from db.schema.todo_list import TodoList
-from logic.logic import Logic
-from logic.priority_update_algorithms import PriorityUpdateAlgorithms
+from todo_organizer.db.db_handler import DBHandler
+from todo_organizer.db.schema.todo_item import TodoItem
+from todo_organizer.db.schema.todo_list import TodoList
+from todo_organizer.logic.logic import Logic
+from todo_organizer.logic.priority_update_algorithms import PriorityUpdateAlgorithms
+from todo_organizer.settings.settings import Settings
 
 logger = logging.getLogger(__name__)
-l = Logic()
+settings = Settings()
+db_handler = DBHandler(connection_string=settings.db_connection_string)
+l = Logic(db_handler=db_handler)
 
 selected_list = None
 task_items = []
@@ -19,8 +23,6 @@ task_items = []
 def _save_changes(key):
     priority = st.session_state[f"{key}priority"]
     description = st.session_state[f"{key}description"]
-    print(priority)
-    print(description)
     relevant_item = [x for x in task_items if x.id == key][0]
     relevant_item.priority = priority
     relevant_item.description = description

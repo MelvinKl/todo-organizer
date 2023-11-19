@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Float, String, ForeignKey, Integer
 
-from db.schema import Base
-from db.schema.todo_list import TodoList
+from todo_organizer.db.schema import Base
+from todo_organizer.db.schema.todo_list import TodoList
 
 
 class TodoItem(Base):

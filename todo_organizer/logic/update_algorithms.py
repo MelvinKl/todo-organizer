@@ -1,7 +1,7 @@
 from typing import List
 
-from db.schema.todo_item import TodoItem
-from logic.priority_update_algorithms import PriorityUpdateAlgorithms
+from todo_organizer.db.schema.todo_item import TodoItem
+from todo_organizer.logic.priority_update_algorithms import PriorityUpdateAlgorithms
 
 
 class UpdateAlgorithms:

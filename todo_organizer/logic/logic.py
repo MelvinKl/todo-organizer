@@ -1,14 +1,14 @@
 import logging
 
-from db.db_handler import DBHandler
-from logic.update_algorithms import UpdateAlgorithms
+from todo_organizer.db.db_handler import DBHandler
+from todo_organizer.logic.update_algorithms import UpdateAlgorithms
 
 logger = logging.getLogger(__name__)
 
 
 class Logic:
-    def __init__(self):
-        self._db_handler = DBHandler()
+    def __init__(self, db_handler: DBHandler):
+        self._db_handler = db_handler
         self._priority_updater = UpdateAlgorithms()
 
     def get_all_lists(self):
