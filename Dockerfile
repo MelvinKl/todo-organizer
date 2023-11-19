@@ -2,6 +2,7 @@ FROM python:3.12-bullseye
 
 RUN apt update
 RUN apt install build-essential -y
+RUN apt install libpq-dev -y
 
 WORKDIR /app
 COPY . /app
