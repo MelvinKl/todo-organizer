@@ -12,4 +12,5 @@ class TodoItem(Base):
     priority = Column(Float)
     title = Column(String)
     description = Column(String, default="")
+    priority_update_algorithm = Column(Integer, default=0)
     priority_update_increment_weight = Column(Float, default=0.25)

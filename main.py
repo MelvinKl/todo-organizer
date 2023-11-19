@@ -37,15 +37,15 @@ def _finish_list_item(key):
     l.finish_item(selected_list, relevant_item)
 
 
-def _add_new_list_item(priority, title, description, priority_update_increment_weight):
+def _add_new_list_item(priority, title, description, priority_update_increment_weight, priority_update_algorithm):
     new_item = TodoItem(list_id=selected_list.id, priority=priority, title=title, description=description,
+                        priority_update_algorithm=priority_update_algorithm.value,
                         priority_update_increment_weight=priority_update_increment_weight)
     l.upsert_list(selected_list, task_items + [new_item])
 
 
-def _add_new_list(name, max_priority, priority_update_algorithm):
-    new_list = TodoList(id=str(uuid.uuid4()), name=name, priority_max=max_priority,
-                        priority_update_algorithm=priority_update_algorithm.value)
+def _add_new_list(name, max_priority):
+    new_list = TodoList(id=str(uuid.uuid4()), name=name, priority_max=max_priority)
     l.upsert_list(new_list, [])
 
 
@@ -58,29 +58,29 @@ with st.sidebar:
             max_priority = st.number_input(label="Priority", min_value=0.,
                                            max_value=sys.float_info.max,
                                            step=1., value=5.)
-            priority_update_algorithm = st.selectbox("Priority update Algorithm", PriorityUpdateAlgorithms)
             submitted = st.form_submit_button("Add")
             if submitted:
-                _add_new_list(name, max_priority, priority_update_algorithm)
+                _add_new_list(name, max_priority)
                 st.rerun()
 
     if selected_list:
         st.markdown("""---""")
         with st.expander("New Item", expanded=False):
-            with st.form(key="new_item_form"):
-                priority = st.number_input(label="Priority", min_value=0.,
-                                           max_value=selected_list.priority_max,
-                                           step=0.1, value=0.)
-                if selected_list.priority_update_algorithm == PriorityUpdateAlgorithms.Increment.value:
-                    priority_update_increment_weight = st.number_input(label="Priority increment value", min_value=0.,
-                                                                       max_value=5., step=.01)
-                else:
-                    priority_update_increment_weight = 0
-                title = st.text_input(label="Title")
-                description = st.text_area(label="Description")
-                submitted = st.form_submit_button("Add")
-                if submitted:
-                    _add_new_list_item(priority, title, description, priority_update_increment_weight)
+            priority = st.number_input(label="Priority", min_value=0.,
+                                       max_value=selected_list.priority_max,
+                                       step=0.1, value=0.)
+            priority_update_algorithm = st.selectbox("Priority update Algorithm", PriorityUpdateAlgorithms)
+            if priority_update_algorithm == PriorityUpdateAlgorithms.Increment:
+                priority_update_increment_weight = st.number_input(label="Priority increment value", min_value=0.,
+                                                                   max_value=5., step=.01)
+            else:
+                priority_update_increment_weight = 0
+            title = st.text_input(label="Title")
+            description = st.text_area(label="Description")
+            submitted = st.button(label="Add")
+            if submitted:
+                _add_new_list_item(priority, title, description, priority_update_increment_weight,
+                                   priority_update_algorithm)
 
         st.markdown("""---""")
         if st.button(key="delete_list", label="Delete list"):
