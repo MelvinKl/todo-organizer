@@ -1,6 +1,9 @@
 import logging
+from typing import List
 
 from todo_organizer.db.db_handler import DBHandler
+from todo_organizer.db.schema.todo_item import TodoItem
+from todo_organizer.db.schema.todo_list import TodoList
 from todo_organizer.logic.priority_updater import PriorityUpdater
 
 logger = logging.getLogger(__name__)
@@ -14,8 +17,11 @@ class Logic:
     def get_all_lists(self):
         return self._db_handler.get_all_lists()
 
-    def get_list_items(self, todo_list):
-        return self._db_handler.get_list_items(todo_list)
+    def get_list_items(self, todo_list: TodoList) -> List[TodoItem]:
+        list_items = self._db_handler.get_list_items(todo_list)
+        # update of timed priority
+        list_items = self._priority_updater.update_priority(list_items, todo_list.priority_max, True)
+        return list_items
 
     def upsert_list(self, todo_list, list_items):
         self._db_handler.upsert([todo_list])

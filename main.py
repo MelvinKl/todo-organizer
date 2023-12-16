@@ -25,9 +25,18 @@ task_items = []
 def _save_changes(key):
     priority = st.session_state[f"{key}priority"]
     description = st.session_state[f"{key}description"]
+    priority_update_deadline_max_priority = None
+    priority_update_deadline = None
+    if task.priority_update_algorithm == UpdateAlgorithms.Date:
+        priority_update_deadline_max_priority = st.session_state[f"{key}priority_update_deadline_max_priority"]
+        priority_update_deadline = st.session_state[f"{key}priority_update_deadline"]
+
     relevant_item = [x for x in task_items if x.id == key][0]
     relevant_item.priority = priority
     relevant_item.description = description
+    relevant_item.priority_update_deadline = priority_update_deadline
+    relevant_item.priority_update_deadline_max_priority = priority_update_deadline_max_priority
+
     logic.upsert_list(selected_list, task_items)
 
 
@@ -41,7 +50,8 @@ def _finish_list_item(key):
     logic.finish_item(selected_list, relevant_item)
 
 
-def _add_new_list_item(priority, title, description, priority_update_increment_weight, priority_update_algorithm):
+def _add_new_list_item(priority, title, description, priority_update_increment_weight, priority_update_algorithm,
+                       priority_target, priority_target_date):
     new_item = TodoItem(
         list_id=selected_list.id,
         priority=priority,
@@ -49,6 +59,8 @@ def _add_new_list_item(priority, title, description, priority_update_increment_w
         description=description,
         priority_update_algorithm=priority_update_algorithm.value,
         priority_update_increment_weight=priority_update_increment_weight,
+        priority_update_deadline=priority_target_date,
+        priority_update_deadline_max_priority=priority_target,
     )
     logic.upsert_list(selected_list, task_items + [new_item])
 
@@ -79,18 +91,27 @@ with st.sidebar:
                 label="Priority", min_value=0.0, max_value=selected_list.priority_max, step=0.1, value=0.0
             )
             priority_update_algorithm = st.selectbox("Priority update Algorithm", UpdateAlgorithms)
+            priority_update_increment_weight = 0
+            priority_target = None
+            priority_target_date = None
+
             if priority_update_algorithm == UpdateAlgorithms.Increment:
                 priority_update_increment_weight = st.number_input(
                     label="Priority increment value", min_value=0.0, max_value=5.0, step=0.01
                 )
-            else:
-                priority_update_increment_weight = 0
+            elif priority_update_algorithm == UpdateAlgorithms.Date:
+                priority_target = st.number_input(
+                    label="Priority target value", min_value=0.0, max_value=5.0, step=0.01, value=5.0
+                )
+                priority_target_date = st.date_input("Priority target date")
+
             title = st.text_input(label="Title")
             description = st.text_area(label="Description")
             submitted = st.button(label="Add")
             if submitted:
                 _add_new_list_item(
-                    priority, title, description, priority_update_increment_weight, priority_update_algorithm
+                    priority, title, description, priority_update_increment_weight, priority_update_algorithm,
+                    priority_target, priority_target_date
                 )
 
         st.markdown("""---""")
@@ -117,6 +138,16 @@ for task in task_items:
             on_change=_save_changes,
             args=(task.id,),
         )
+        if task.priority_update_algorithm == UpdateAlgorithms.Date.value:
+            priority_target = st.number_input(
+                label="Priority target value", min_value=0.0, max_value=selected_list.priority_max, step=0.01,
+                value=task.priority_update_deadline_max_priority,
+                key=f"{task.id}priority_update_deadline_max_priority", on_change=_save_changes, args=(task.id,)
+            )
+            priority_target_date = st.date_input("Priority target date", value=task.priority_update_deadline,
+                                                 on_change=_save_changes, args=(task.id,),
+                                                 key=f"{task.id}priority_update_deadline"
+                                                 )
         new_description = st.text_area(
             label="Description",
             value=st.session_state[f"{task.id}_description"],
